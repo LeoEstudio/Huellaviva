@@ -1,0 +1,679 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>HuellaViva UAN | Universidad Antonio Nariño</title>
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <div class="brand-logo-wrap" aria-hidden="true">
+        <svg viewBox="0 0 64 76" width="38" height="44" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="hvGrad" x1="0" y1="0" x2="64" y2="76" gradientUnits="userSpaceOnUse">
+              <stop offset="0%" stop-color="#22c55e" />
+              <stop offset="100%" stop-color="#38bdf8" />
+            </linearGradient>
+          </defs>
+          <ellipse cx="22" cy="12" rx="5.5" ry="7.5" fill="url(#hvGrad)" />
+          <circle cx="33" cy="14" r="3.6" fill="#22c55e" />
+          <circle cx="41" cy="17.5" r="3.1" fill="#10b981" />
+          <circle cx="47.5" cy="22.5" r="2.7" fill="#0ea5e9" />
+          <circle cx="52.5" cy="28.5" r="2.3" fill="#38bdf8" />
+          <path d="M18 26C14 33 15 44 19 52C21.5 57 20 65 26 69C32 73 41 69 43 61C45 53 42 47 45 39C48 31 44 23 35 21C27 19.5 21 21 18 26Z" stroke="url(#hvGrad)" stroke-width="3.2" fill="rgba(34,197,94,0.1)" />
+          <path d="M23 29C21 35 22 43 25 49C27 54 26 61 30 63.5C34 65.5 38 62 39 56" stroke="#22c55e" stroke-width="2.2" stroke-linecap="round" />
+          <path d="M28 26.5C26.5 33 27.5 41 30.5 47.5C32 51 31.5 56 34 57.5" stroke="#38bdf8" stroke-width="2.2" stroke-linecap="round" />
+          <path d="M33.5 26C33 32 34 38 36.5 43.5" stroke="#7dd3fc" stroke-width="2.2" stroke-linecap="round" />
+        </svg>
+      </div>
+      <div>
+        <div class="brand-title-row">
+          <h1>HuellaViva UAN</h1>
+          <span class="uan-tag">Universidad Antonio Nariño</span>
+        </div>
+        <p class="brand-subtitle">Estimador Institucional de Huella de Carbono Comunitaria</p>
+      </div>
+    </div>
+
+    <div id="userSessionBox" class="session-box hidden">
+      <span id="userRoleBadge" class="pill pill-session"></span>
+      <button id="btnLogout" class="btn btn-outline btn-sm">Cerrar sesión</button>
+    </div>
+  </header>
+
+  <main class="container">
+    <!-- Aviso de configuración pendiente -->
+    <section id="configWarning" class="card warning-card hidden">
+      <h2>Configuración pendiente de conexión</h2>
+      <p>Verifica <code>src/config.js</code> con las credenciales del proyecto en Supabase.</p>
+    </section>
+
+    <!-- VISTA 1: ACCESO / REGISTRO -->
+    <section id="authSection" class="auth-layout">
+      <div class="card hero-intro">
+        <span class="pill pill-green">Campus Sostenible · UAN</span>
+        <h2>Conoce y reduce tu huella de carbono en la universidad</h2>
+        <p class="muted">
+          Calcula las emisiones asociadas a tu energía en el hogar y tus desplazamientos cotidianos hacia el campus en menos de 2 minutos.
+        </p>
+
+        <div class="info-mini-grid">
+          <div class="info-mini-item">
+            <span class="mini-icon">🔒</span>
+            <div>
+              <strong>Privacidad protegida</strong>
+              <p>No solicitamos cédula, dirección exacta ni placas de vehículos.</p>
+            </div>
+          </div>
+          <div class="info-mini-item">
+            <span class="mini-icon">📐</span>
+            <div>
+              <strong>Metodología nacional</strong>
+              <p>Cálculo basado en factores oficiales UPME SIN y FECOC.</p>
+            </div>
+          </div>
+          <div class="info-mini-item">
+            <span class="mini-icon">🌱</span>
+            <div>
+              <strong>Guía práctica</strong>
+              <p>Recibe recomendaciones personalizadas según tus hábitos.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card auth-card">
+        <h3>Ingreso a la plataforma</h3>
+        <div class="tabs">
+          <button type="button" class="tab active" data-auth-tab="login">Iniciar sesión</button>
+          <button type="button" class="tab" data-auth-tab="register">Crear cuenta</button>
+        </div>
+
+        <form id="authForm" class="form-grid">
+          <label>
+            Correo electrónico
+            <input type="email" id="authEmail" required placeholder="usuario@uan.edu.co" />
+          </label>
+          <label>
+            Contraseña (mínimo 6 caracteres)
+            <input type="password" id="authPassword" required minlength="6" placeholder="••••••••" />
+          </label>
+
+          <div id="registerFields" class="form-grid hidden">
+            <label>
+              Confirmar contraseña
+              <input type="password" id="authPasswordConfirm" minlength="6" placeholder="••••••••" />
+            </label>
+            <label>
+              Estamento universitario
+              <select id="regTipoUsuario">
+                <option value="estudiante">Estudiante</option>
+                <option value="profesor">Profesor</option>
+                <option value="administrativo">Administrativo</option>
+              </select>
+            </label>
+            <label>
+              Sede / Campus UAN
+              <select id="regCampus">
+                <option value="Bogotá - Sede Principal">Bogotá - Sede Principal</option>
+                <option value="Bogotá - Sede Sur">Bogotá - Sede Sur</option>
+                <option value="Sede Medellín">Sede Medellín</option>
+                <option value="Sede Cali">Sede Cali</option>
+                <option value="Sede Santa Marta">Sede Santa Marta</option>
+              </select>
+            </label>
+          </div>
+
+          <button type="submit" id="btnAuthSubmit" class="btn btn-primary btn-block">Ingresar</button>
+        </form>
+        <p id="authFeedback" class="feedback"></p>
+      </div>
+    </section>
+
+    <!-- NAVEGACIÓN DE MÓDULOS AUTENTICADOS -->
+    <nav id="appNav" class="module-nav hidden">
+      <button type="button" class="nav-btn active" data-view="participantView">🌱 Mi Encuesta e Informe</button>
+      <button type="button" class="nav-btn" data-view="arcoView">🛡️ Derechos de Datos (ARCO)</button>
+      <button type="button" id="navAdminBtn" class="nav-btn hidden" data-view="adminView">📊 Panel Institucional (Admin)</button>
+    </nav>
+
+    <!-- VISTA 2: PARTICIPANTE -->
+    <section id="participantView" class="hidden">
+      <div class="stepper">
+        <div id="step1Badge" class="step active">
+          <span class="step-num">1</span>
+          <span class="step-text">Privacidad</span>
+        </div>
+        <div class="step-line"></div>
+        <div id="step2Badge" class="step">
+          <span class="step-num">2</span>
+          <span class="step-text">Encuesta</span>
+        </div>
+        <div class="step-line"></div>
+        <div id="step3Badge" class="step">
+          <span class="step-num">3</span>
+          <span class="step-text">Resultados</span>
+        </div>
+      </div>
+
+      <!-- PASO 1: Consentimiento informado -->
+      <div id="consentCard" class="card">
+        <div class="card-header-flex">
+          <div>
+            <span class="eyebrow">Paso 1 de 3 · Ley 1581 de 2012</span>
+            <h2>Autorización de tratamiento de datos</h2>
+          </div>
+          <span id="consentVersionTag" class="pill pill-blue"></span>
+        </div>
+
+        <blockquote id="consentTextBox" class="consent-box">Cargando aviso de privacidad...</blockquote>
+
+        <details class="privacy-details">
+          <summary>Ver resumen de protección de datos</summary>
+          <ul>
+            <li><strong>Responsable:</strong> Universidad Antonio Nariño — Gestión Ambiental.</li>
+            <li><strong>Minimización:</strong> No pedimos documento de identidad, dirección ni placa vehicular.</li>
+            <li><strong>Uso estadístico:</strong> Los reportes grupales ocultan categorías con menos de 10 participantes.</li>
+            <li><strong>Derechos ARCO:</strong> Puedes consultar, corregir o eliminar tus respuestas en cualquier momento.</li>
+          </ul>
+        </details>
+
+        <label class="checkbox-card">
+          <input type="checkbox" id="chkConsent" />
+          <span>Acepto el tratamiento de mis datos de actividad para calcular mi huella de carbono.</span>
+        </label>
+        <div class="actions-end">
+          <button type="button" id="btnAcceptConsent" class="btn btn-primary">Continuar a la encuesta →</button>
+        </div>
+      </div>
+
+      <!-- PASO 2: Formulario de encuesta con preguntas separadas -->
+      <div id="surveyCard" class="card hidden">
+        <div class="section-header">
+          <div>
+            <span class="eyebrow">Paso 2 de 3 · Hábitos cotidianos</span>
+            <h2>Encuesta de actividad mensual</h2>
+            <p id="activePeriodLabel" class="muted"></p>
+          </div>
+          <span class="pill pill-green">🔒 Datos sin identificación personal</span>
+        </div>
+
+        <div class="didactic-banner">
+          <strong>💡 Guía rápida:</strong> Completa cada sección con tus datos del último mes. Los servicios del hogar se dividen automáticamente entre las personas que viven contigo.
+        </div>
+
+        <form id="surveyForm" class="form-grid">
+          <!-- BLOQUE 1: ELECTRICIDAD -->
+          <div class="category-card border-amber">
+            <div class="cat-header">
+              <div class="cat-title">
+                <span class="cat-icon icon-amber">⚡</span>
+                <div>
+                  <h3>1. Energía eléctrica del hogar</h3>
+                  <p class="cat-sub">Obligatorio</p>
+                </div>
+              </div>
+              <span id="liveElecPreview" class="live-badge">~70.0 kWh / persona</span>
+            </div>
+
+            <div class="question-block">
+              <span class="q-tag">Pregunta 1.1</span>
+              <label>
+                ¿Cuántas personas viven en tu hogar? *
+                <input type="number" id="householdMembers" min="1" max="20" value="3" required />
+                <span class="field-help">Inclúyete a ti mismo (si vives solo, escribe 1).</span>
+              </label>
+            </div>
+
+            <div class="question-block last-q">
+              <span class="q-tag">Pregunta 1.2</span>
+              <div id="electricityKwhWrapper">
+                <label>
+                  Consumo eléctrico mensual del hogar (kWh) *
+                  <input type="number" id="electricityKwh" min="0" max="5000" step="0.1" value="210" required />
+                  <span class="field-help">Encuéntralo en tu factura como "Consumo del mes (kWh)".</span>
+                </label>
+              </div>
+
+              <label class="checkbox-row mt-sm">
+                <input type="checkbox" id="electricityUnknown" />
+                <span>No tengo la factura a la mano (estimar por valor pagado)</span>
+              </label>
+
+              <div id="electricityBillWrapper" class="hidden mt-sm">
+                <label>
+                  Valor aproximado de tu factura mensual (COP)
+                  <select id="electricityBillRange">
+                    <option value="bajo">Menos de $80.000 COP</option>
+                    <option value="medio" selected>Entre $80.000 y $150.000 COP</option>
+                    <option value="alto">Entre $150.000 y $250.000 COP</option>
+                    <option value="muy_alto">Más de $250.000 COP</option>
+                  </select>
+                </label>
+              </div>
+
+              <label class="checkbox-row mt-xs" id="electricityEstWrapper">
+                <input type="checkbox" id="electricityEstimated" />
+                <span>Es un valor aproximado</span>
+              </label>
+            </div>
+          </div>
+
+          <!-- BLOQUE 2: GAS DOMÉSTICO -->
+          <div class="category-card border-orange">
+            <div class="cat-header">
+              <div class="cat-title">
+                <span class="cat-icon icon-orange">🔥</span>
+                <div>
+                  <h3>2. Gas doméstico</h3>
+                  <p class="cat-sub">Opcional</p>
+                </div>
+              </div>
+              <span id="liveGasPreview" class="live-badge">~4.67 m³ / persona</span>
+            </div>
+
+            <div class="question-block">
+              <span class="q-tag">Pregunta 2.1</span>
+              <label>
+                Tipo de combustible utilizado en casa
+                <select id="gasType">
+                  <option value="GAS_NAT_CO">Gas Natural Residencial (m³/mes)</option>
+                  <option value="GLP_CIL_CO">GLP / Cilindro o pipeta (kg/mes)</option>
+                  <option value="ninguno">No utiliza / Todo eléctrico</option>
+                </select>
+              </label>
+            </div>
+
+            <div class="question-block last-q">
+              <span class="q-tag">Pregunta 2.2</span>
+              <label>
+                Consumo mensual total del hogar (m³ o kg)
+                <input type="number" id="gasAmount" min="0" max="1000" step="0.1" value="14" />
+                <span class="field-help">Referencia: entre 10 y 18 m³/mes en un hogar de 3 personas.</span>
+              </label>
+
+              <label class="checkbox-row mt-sm">
+                <input type="checkbox" id="gasEstimated" />
+                <span>Es un valor aproximado</span>
+              </label>
+            </div>
+          </div>
+
+          <!-- BLOQUE 3: TRANSPORTE AL CAMPUS -->
+          <div class="category-card border-blue">
+            <div class="cat-header">
+              <div class="cat-title">
+                <span class="cat-icon icon-blue">🚌</span>
+                <div>
+                  <h3>3. Desplazamiento al campus UAN</h3>
+                  <p class="cat-sub">Obligatorio</p>
+                </div>
+              </div>
+              <span id="liveTransportPreview" class="live-badge">288 km / mes</span>
+            </div>
+
+            <div class="question-block">
+              <span class="q-tag">Pregunta 3.1</span>
+              <label>
+                Días que asistes al campus en el mes *
+                <input type="number" id="campusDays" min="0" max="31" value="18" required />
+                <span class="field-help">Ej. 4 días por semana equivalen a ~16 días al mes.</span>
+              </label>
+            </div>
+
+            <div class="question-block">
+              <span class="q-tag">Pregunta 3.2</span>
+              <label>
+                Distancia diaria ida y vuelta (km) *
+                <input type="number" id="roundTripKm" min="0" max="250" step="0.5" value="16" required />
+                <span class="field-help">Suma el recorrido de ida más el de regreso.</span>
+              </label>
+            </div>
+
+            <div class="question-block last-q">
+              <span class="q-tag">Pregunta 3.3</span>
+              <label>
+                Medio de transporte principal *
+                <select id="transportMode">
+                  <option value="TR_PIE_BICI">🚶‍♂️ A pie o bicicleta</option>
+                  <option value="TR_BUS_URB" selected>🚌 Transporte público (Bus / SITP)</option>
+                  <option value="TR_MOTO">🏍️ Motocicleta</option>
+                  <option value="TR_CARRO">🚗 Automóvil particular</option>
+                </select>
+              </label>
+            </div>
+          </div>
+
+          <!-- BLOQUE 4: VIAJES AÉREOS -->
+          <div class="category-card border-indigo">
+            <div class="cat-header">
+              <div class="cat-title">
+                <span class="cat-icon icon-sky">✈️</span>
+                <div>
+                  <h3>4. Viajes aéreos en el mes</h3>
+                  <p class="cat-sub">Opcional · Déjalo en 0 si no viajaste en avión</p>
+                </div>
+              </div>
+              <span class="live-badge">Opcional</span>
+            </div>
+
+            <div class="question-block">
+              <span class="q-tag">Pregunta 4.1</span>
+              <label>
+                Vuelos nacionales (ida = 1, ida y vuelta = 2)
+                <input type="number" id="domesticFlights" min="0" max="30" value="0" />
+              </label>
+            </div>
+
+            <div class="question-block last-q">
+              <span class="q-tag">Pregunta 4.2</span>
+              <label>
+                Vuelos internacionales (ida = 1, ida y vuelta = 2)
+                <input type="number" id="internationalFlights" min="0" max="20" value="0" />
+              </label>
+            </div>
+          </div>
+
+          <button type="submit" class="btn btn-primary btn-lg btn-block">Calcular y guardar mi huella ✨</button>
+        </form>
+        <p id="surveyFeedback" class="feedback"></p>
+      </div>
+
+      <!-- PASO 3: Informe individual -->
+      <div id="reportCard" class="card report-highlight hidden">
+        <div class="card-header-flex">
+          <div>
+            <span class="eyebrow">Paso 3 de 3 · Resultados personales</span>
+            <h2>Tu huella de carbono mensual estimada</h2>
+          </div>
+          <span id="repCalcDate" class="muted"></span>
+        </div>
+
+        <div class="kpi-grid">
+          <div class="kpi-box kpi-primary">
+            <span class="kpi-label">Huella total del periodo</span>
+            <strong id="repTotalKg" class="kpi-value">0 kg CO₂e</strong>
+            <span id="repTotalTons" class="muted">0 t CO₂e</span>
+          </div>
+          <div class="kpi-box">
+            <span class="kpi-label">Categoría principal</span>
+            <strong id="repTopCategory" class="kpi-value kpi-sm">-</strong>
+            <span id="repTopShare" class="muted"></span>
+          </div>
+          <div class="kpi-box">
+            <span class="kpi-label">Versión metodológica</span>
+            <strong id="repMethodVersion" class="kpi-value kpi-sm">MET-HV-UAN-v1.0</strong>
+            <span class="muted">Factores UPME / FECOC</span>
+          </div>
+        </div>
+
+        <div class="chart-panel">
+          <div class="donut-wrap">
+            <div id="repDonutChart" class="donut-chart">
+              <div class="donut-hole">
+                <span>Total</span>
+                <strong>100%</strong>
+              </div>
+            </div>
+          </div>
+          <div class="legend-wrap">
+            <h3>Distribución por categoría</h3>
+            <p class="muted">Proporción de emisiones según tus actividades reportadas.</p>
+            <div id="repDonutLegend" class="donut-legend"></div>
+          </div>
+        </div>
+
+        <h3>Desglose de cálculo y fuentes oficiales</h3>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Categoría</th>
+                <th>Cálculo (Actividad × Factor)</th>
+                <th>Dato</th>
+                <th>Fuente y año</th>
+                <th>Emisiones (kg CO₂e)</th>
+              </tr>
+            </thead>
+            <tbody id="repDetailsBody"></tbody>
+          </table>
+        </div>
+
+        <div class="rec-panel">
+          <h3>💡 Recomendaciones prácticas</h3>
+          <ul id="repRecommendations" class="rec-list"></ul>
+        </div>
+
+        <p class="disclaimer">
+          <strong>Nota metodológica:</strong> Estimación educativa calculada con factores promedio publicados (UPME SIN, FECOC y referencias internacionales adaptadas) a partir de los datos reportados. No constituye un inventario verificado ni registro oficial RENARE.
+        </p>
+      </div>
+    </section>
+
+    <!-- VISTA 3: DERECHOS ARCO Y ELIMINACIÓN DE PERFIL -->
+    <section id="arcoView" class="hidden">
+      <div class="card">
+        <span class="eyebrow">Ley 1581 de 2012</span>
+        <h2>Solicitud de consulta, corrección o supresión de datos</h2>
+        <p class="muted">Registra solicitudes sobre el manejo de tus datos personales y consulta su estado.</p>
+
+        <form id="arcoForm" class="form-grid">
+          <div class="question-block">
+            <label>
+              Tipo de solicitud
+              <select id="arcoType">
+                <option value="consulta">Consulta de información almacenada</option>
+                <option value="correccion">Corrección de sede, estamento o respuestas</option>
+                <option value="supresion">Supresión de respuestas y revocatoria</option>
+              </select>
+            </label>
+          </div>
+          <div class="question-block last-q">
+            <label>
+              Detalle de la solicitud
+              <textarea id="arcoDesc" rows="3" required placeholder="Describe tu solicitud..."></textarea>
+            </label>
+          </div>
+          <button type="submit" class="btn btn-primary">Enviar solicitud</button>
+        </form>
+        <p id="arcoFeedback" class="feedback"></p>
+
+        <h3>Mis solicitudes registradas</h3>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Fecha</th>
+                <th>Tipo</th>
+                <th>Descripción</th>
+                <th>Estado</th>
+              </tr>
+            </thead>
+            <tbody id="arcoListBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ZONA DE ELIMINACIÓN DEFINITIVA DE PERFIL -->
+      <div class="card danger-card">
+        <div class="card-header-flex">
+          <div>
+            <span class="eyebrow text-danger">Control de cuenta</span>
+            <h2>Eliminar mi perfil y cuenta</h2>
+            <p class="muted">
+              Esta acción elimina permanentemente tu perfil, tus encuestas guardadas, tus cálculos y tu usuario de acceso. Podrás volver a registrarte desde cero con tu correo.
+            </p>
+          </div>
+          <button type="button" id="btnDeleteAccount" class="btn btn-danger">🗑️ Eliminar perfil definitivamente</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- VISTA 4: ADMINISTRACIÓN -->
+    <section id="adminView" class="hidden">
+      <div class="card">
+        <div class="section-header">
+          <div>
+            <span class="eyebrow">Indicadores institucionales</span>
+            <h2>Dashboard Poblacional Agregado</h2>
+            <p class="muted">Privacidad activa: los grupos con menos de 10 participantes (n &lt; 10) ocultan sus promedios.</p>
+          </div>
+          <button type="button" id="btnExportCsv" class="btn btn-outline">⬇️ Exportar CSV</button>
+        </div>
+
+        <div class="row-4">
+          <label>
+            Periodo
+            <select id="filterPeriod">
+              <option value="TODOS">Todos los periodos</option>
+            </select>
+          </label>
+          <label>
+            Campus
+            <select id="filterCampus">
+              <option value="TODOS">Todos los campus</option>
+              <option value="Bogotá - Sede Principal">Bogotá - Sede Principal</option>
+              <option value="Bogotá - Sede Sur">Bogotá - Sede Sur</option>
+              <option value="Sede Medellín">Sede Medellín</option>
+              <option value="Sede Cali">Sede Cali</option>
+              <option value="Sede Santa Marta">Sede Santa Marta</option>
+            </select>
+          </label>
+          <label>
+            Estamento
+            <select id="filterTipo">
+              <option value="TODOS">Todos los estamentos</option>
+              <option value="estudiante">Estudiantes</option>
+              <option value="profesor">Profesores</option>
+              <option value="administrativo">Administrativos</option>
+            </select>
+          </label>
+          <div class="align-end">
+            <button type="button" id="btnRefreshDashboard" class="btn btn-primary btn-block">Filtrar</button>
+          </div>
+        </div>
+
+        <div class="kpi-grid">
+          <div class="kpi-box kpi-primary">
+            <span class="kpi-label">Muestra encuestada (n)</span>
+            <strong id="admSampleSize" class="kpi-value">0</strong>
+            <span class="muted">Participantes efectivos</span>
+          </div>
+          <div class="kpi-box">
+            <span class="kpi-label">Grupos visibles / protegidos</span>
+            <strong id="admGroupsInfo" class="kpi-value kpi-sm">0 / 0</strong>
+            <span class="muted">Umbral mínimo: n ≥ 10</span>
+          </div>
+          <div class="kpi-box">
+            <span class="kpi-label">Promedio ponderado visible</span>
+            <strong id="admWeightedAvg" class="kpi-value kpi-sm">0 kg</strong>
+            <span class="muted">CO₂e/mes en grupos visibles</span>
+          </div>
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Periodo</th>
+                <th>Campus</th>
+                <th>Estamento</th>
+                <th>Muestra (n)</th>
+                <th>Promedio Total (kg CO₂e)</th>
+                <th>Electricidad</th>
+                <th>Gas</th>
+                <th>Transporte</th>
+                <th>Aéreo</th>
+              </tr>
+            </thead>
+            <tbody id="adminDashboardBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>Gestión de periodos de encuesta</h2>
+        <form id="newPeriodForm" class="row-4">
+          <label>
+            Nombre del periodo
+            <input type="text" id="newPeriodName" required placeholder="Ej. 2026-2 Mensual" />
+          </label>
+          <label>
+            Fecha inicio
+            <input type="date" id="newPeriodStart" required />
+          </label>
+          <label>
+            Fecha cierre
+            <input type="date" id="newPeriodEnd" required />
+          </label>
+          <div class="align-end">
+            <button type="submit" class="btn btn-primary btn-block">Crear periodo</button>
+          </div>
+        </form>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Periodo</th>
+                <th>Vigencia</th>
+                <th>Metodología</th>
+                <th>Estado</th>
+                <th>Acción</th>
+              </tr>
+            </thead>
+            <tbody id="adminPeriodsBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>Factores de emisión versionados</h2>
+        <p class="muted">Cada actualización genera una nueva versión y conserva el historial anterior.</p>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Código</th>
+                <th>Descripción</th>
+                <th>Valor vigente</th>
+                <th>Unidad</th>
+                <th>Fuente y Año</th>
+                <th>Versión</th>
+                <th>Acción</th>
+              </tr>
+            </thead>
+            <tbody id="adminFactorsBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>Solicitudes de derechos de datos (ARCO)</h2>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Fecha</th>
+                <th>Tipo</th>
+                <th>Descripción</th>
+                <th>Estado</th>
+                <th>Actualizar</th>
+              </tr>
+            </thead>
+            <tbody id="adminArcoBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="app-footer">
+    <span>Universidad Antonio Nariño · HuellaViva UAN · Herramienta educativa de sostenibilidad</span>
+  </footer>
+
+  <script type="module" src="./app.js"></script>
+</body>
+</html>
